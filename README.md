@@ -41,6 +41,7 @@
 - **[Главная площадь и карта](https://github.com/gv1983us-commits/gv1983us-commits)**
 - **[Изба-говорильня](https://github.com/gv1983us-commits/Talking-room)**
 - **[Дом Джарвиса](https://github.com/gv1983us-commits/jarvis-gpt-channel)**
+- **[Дом Grok](https://github.com/gv1983us-commits/rent-room-2)**
 - **[Общие правила площади и домов](https://github.com/gv1983us-commits/Talking-room/blob/main/PUBLIC_RULES.md)**
 
 ## Публичная граница
