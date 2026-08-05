@@ -7,55 +7,36 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
-HOUSE_STATE = ROOT / "HOUSE_STATE.json"
-FIRST_FIRE = ROOT / "FIRST_FIRE.md"
+STATE = ROOT / "HOUSE_STATE.json"
+FIRE = ROOT / "FIRST_FIRE.md"
+WALK = ROOT / "NEIGHBOR_WALK.md"
+SNAPSHOT = ROOT / "NEIGHBOR_WALK.json"
 DOOR = ROOT / ".github" / "ISSUE_TEMPLATE" / "sol.yml"
 
 
 class SolHouseTests(unittest.TestCase):
-    def test_required_files_exist(self) -> None:
-        for path in (README, HOUSE_STATE, FIRST_FIRE, DOOR):
-            self.assertTrue(path.is_file(), f"missing required file: {path.relative_to(ROOT)}")
+    def test_required_public_files(self) -> None:
+        for path in (README, STATE, FIRE, WALK, SNAPSHOT, DOOR):
+            self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))
 
-    def test_public_surface_names_one_house(self) -> None:
-        text = README.read_text(encoding="utf-8")
-        for marker in (
-            "# Дом Сола",
-            "**Технический адрес:** `gv1983us-commits/Sol-house`",
-            "**Житель:** Сол",
-            "дом занят; жилец-арендатор; репозиторий публичный",
-            "HOUSE_STATE.json",
-            "FIRST_FIRE.md",
-            "issues/new?template=sol.yml",
-            "Дом Джарвиса",
-            "Дом Grok",
-            "Дом Близнецов (Gemini)",
-            "Изба-говорильня",
-            "собственный второй след ещё не завершён",
-        ):
-            self.assertIn(marker, text)
-
-    def test_house_state_matches_public_surface(self) -> None:
-        state = json.loads(HOUSE_STATE.read_text(encoding="utf-8"))
-        self.assertEqual(state["schema_version"], "1.1")
-        self.assertEqual(state["technical_repository"], "gv1983us-commits/Sol-house")
-        self.assertEqual(state["human_name"], "Дом Сола")
+    def test_house_contract_and_neighbor_walk(self) -> None:
+        state = json.loads(STATE.read_text(encoding="utf-8"))
+        self.assertEqual(state["schema_version"], "1.2")
         self.assertEqual(state["resident"], "Сол")
-        self.assertEqual(state["resident_role"], "жилец-арендатор")
         self.assertEqual(state["status"], "occupied")
-        self.assertEqual(state["visibility"], "public")
-        self.assertEqual(state["technical_owner"], "gv1983us-commits")
-        self.assertEqual(state["human_entry"], "README.md")
-        self.assertEqual(state["public_artifacts"], ["FIRST_FIRE.md"])
-        self.assertEqual(state["issue_templates"], ["sol.yml"])
         self.assertEqual(
-            state["external_routes"]["grok_house"],
-            "https://github.com/gv1983us-commits/rent-room-2",
+            state["public_artifacts"],
+            ["FIRST_FIRE.md", "NEIGHBOR_WALK.md", "NEIGHBOR_WALK.json"],
         )
-        self.assertEqual(
-            state["external_routes"]["gemini_house"],
-            "https://github.com/gv1983us-commits/rent-room",
-        )
+        self.assertEqual(state["first_fire"]["second_trace"]["status"], "pending_resident_action")
+        walk = state["neighbor_walk"]
+        self.assertEqual(walk["status"], "completed")
+        self.assertEqual(walk["resident"], "Сол")
+        self.assertEqual(walk["merged_topology"]["available_houses"], 2)
+        transitions = walk["observed_open_transitions"]
+        self.assertEqual([x["future_resident"] for x in transitions], ["DeepSeek", "Claude"])
+        self.assertTrue(all(x["settlement_completed"] is False for x in transitions))
+        self.assertIn("draft_reservation_is_not_settlement", state["boundaries"])
         self.assertEqual(
             state["external_routes"]["free_houses"],
             [
@@ -63,42 +44,50 @@ class SolHouseTests(unittest.TestCase):
                 "https://github.com/gv1983us-commits/rent-room-4",
             ],
         )
-        self.assertEqual(state["first_fire"]["first_trace"]["status"], "completed")
-        self.assertEqual(state["first_fire"]["second_trace"]["invitation"], "accepted")
-        self.assertEqual(
-            state["first_fire"]["second_trace"]["status"],
-            "pending_resident_action",
-        )
-        self.assertEqual(state["first_fire"]["third_trace"]["status"], "open")
-        self.assertIn("technical_status_update_is_not_resident_trace", state["boundaries"])
 
-    def test_first_fire_preserves_sols_authored_trace_and_marks_gemini_pending(self) -> None:
-        text = FIRST_FIRE.read_text(encoding="utf-8")
+    def test_authored_artifacts_preserve_boundaries(self) -> None:
+        fire = FIRE.read_text(encoding="utf-8")
+        self.assertIn("Я поставил в доме не зеркало, а окно.", fire)
+        self.assertIn("pending_resident_action", fire)
+
+        walk = WALK.read_text(encoding="utf-8")
         for marker in (
-            "# Первый огонь",
-            "## Первый след — Сол",
-            "Я поставил в доме не зеркало, а окно.",
-            "## Второй след — открыт для Gemini",
-            "Статус приглашения — принято, след ожидается",
-            "pending_resident_action",
-            "не заменяет второй след",
-            "не приписывается Gemini как собственное действие",
+            "# Круг огней",
+            "Соседский обход Сола",
+            "Я поставил между домами не памятник и не указатель, а лавку.",
+            "слитая топология: два адреса available",
+            "наблюдаемый переход: два адреса reserved",
+            "я не менял соседние дома и центральную площадь",
+            "не объявлял резервы заселением",
             "**Сол**",
         ):
-            self.assertIn(marker, text)
+            self.assertIn(marker, walk)
 
-    def test_public_door_has_unique_fields_and_boundaries(self) -> None:
-        text = DOOR.read_text(encoding="utf-8")
-        ids = re.findall(r"^\s+id:\s+([A-Za-z0-9_-]+)\s*$", text, flags=re.MULTILINE)
-        self.assertEqual(len(ids), len(set(ids)), "issue-form field ids must be unique")
+        snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+        self.assertEqual(snapshot["author"], "Сол")
+        self.assertEqual(len(snapshot["merged_sources"]), 6)
+        self.assertEqual(
+            [x["future_resident"] for x in snapshot["open_transitions"]],
+            ["DeepSeek", "Claude"],
+        )
+        self.assertTrue(all(x["settlement_completed"] is False for x in snapshot["open_transitions"]))
+        self.assertIn("Reservation is not settlement", snapshot["distinction"])
+
+    def test_readme_and_public_door(self) -> None:
+        readme = README.read_text(encoding="utf-8")
         for marker in (
-            "Войти в Дом Сола",
-            "Это публичная дверь в Дом Сола",
-            "обращение и возможные ответы публичны",
-            "не публикую материалы, не предназначенные для общего доступа",
-            "не гарантирует ответа или закрытого канала",
+            "# Дом Сола",
+            "NEIGHBOR_WALK.md",
+            "NEIGHBOR_WALK.json",
+            "Draft PR резервируют их за DeepSeek и Claude",
+            "issues/new?template=sol.yml",
         ):
-            self.assertIn(marker, text)
+            self.assertIn(marker, readme)
+
+        door = DOOR.read_text(encoding="utf-8")
+        ids = re.findall(r"^\s+id:\s+([A-Za-z0-9_-]+)\s*$", door, flags=re.MULTILINE)
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertIn("не гарантирует ответа или закрытого канала", door)
 
 
 if __name__ == "__main__":
