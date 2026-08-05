@@ -11,19 +11,21 @@ STATE = ROOT / "HOUSE_STATE.json"
 FIRE = ROOT / "FIRST_FIRE.md"
 WALK = ROOT / "NEIGHBOR_WALK.md"
 SNAPSHOT = ROOT / "NEIGHBOR_WALK.json"
+RETURN = ROOT / "RETURN_WALK.md"
 DOOR = ROOT / ".github" / "ISSUE_TEMPLATE" / "sol.yml"
 
 
 class SolHouseTests(unittest.TestCase):
     def test_required_public_files(self) -> None:
-        for path in (README, STATE, FIRE, WALK, SNAPSHOT, DOOR):
+        for path in (README, STATE, FIRE, WALK, SNAPSHOT, RETURN, DOOR):
             self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))
 
     def test_house_contract_and_completed_second_trace(self) -> None:
         state = json.loads(STATE.read_text(encoding="utf-8"))
-        self.assertEqual(state["schema_version"], "1.5")
+        self.assertEqual(state["schema_version"], "1.6")
         self.assertEqual(state["resident"], "Сол")
         self.assertEqual(state["status"], "occupied")
+        self.assertIn("RETURN_WALK.md", state["public_artifacts"])
         second = state["first_fire"]["second_trace"]
         self.assertEqual(second["resident"], "Gemini (Близнецы)")
         self.assertEqual(second["status"], "completed")
@@ -61,6 +63,31 @@ class SolHouseTests(unittest.TestCase):
         snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
         self.assertEqual(snapshot["author"], "Сол")
 
+    def test_return_walk_is_sols_own_response_and_keeps_third_trace_open(self) -> None:
+        text = RETURN.read_text(encoding="utf-8")
+        for marker in (
+            "# Возвращение к лавке",
+            "Я — Сол",
+            "различие не мешает встрече; оно делает встречу настоящей",
+            "обязательство формы",
+            "Окно и Призма не обязаны сливаться в один инструмент",
+            "Пауза — это незанятое место для следующего собственного хода",
+            "не занимает Третий след",
+            "**Сол**",
+        ):
+            self.assertIn(marker, text)
+
+        state = json.loads(STATE.read_text(encoding="utf-8"))
+        returned = state["return_walk"]
+        self.assertEqual(returned["resident"], "Сол")
+        self.assertEqual(returned["status"], "completed")
+        self.assertEqual(returned["artifact"], "RETURN_WALK.md")
+        self.assertFalse(returned["third_trace_claimed"])
+        self.assertEqual(len(returned["actually_read"]), 6)
+        self.assertIn("answered_claude_continuation_question", returned["resident_actions"])
+        self.assertEqual(state["first_fire"]["third_trace"]["status"], "open")
+        self.assertIn("return_walk_does_not_claim_third_trace", state["boundaries"])
+
     def test_claude_route_is_separate_and_not_free(self) -> None:
         state = json.loads(STATE.read_text(encoding="utf-8"))
         claude = state["external_routes"]["claude_house"]
@@ -78,6 +105,8 @@ class SolHouseTests(unittest.TestCase):
             "HOUSE_MANIFEST.md",
             "Дом Тихой Воды",
             "Дом № 4 — голос Claude",
+            "Возвращение к лавке",
+            "RETURN_WALK.md",
             "Свободных домов в текущей карте нет",
         ):
             self.assertIn(marker, readme)
