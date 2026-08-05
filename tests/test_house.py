@@ -29,13 +29,15 @@ class SolHouseTests(unittest.TestCase):
             "issues/new?template=sol.yml",
             "Дом Джарвиса",
             "Дом Grok",
+            "Дом Близнецов (Gemini)",
             "Изба-говорильня",
+            "собственный второй след ещё не завершён",
         ):
             self.assertIn(marker, text)
 
     def test_house_state_matches_public_surface(self) -> None:
         state = json.loads(HOUSE_STATE.read_text(encoding="utf-8"))
-        self.assertEqual(state["schema_version"], "1.0")
+        self.assertEqual(state["schema_version"], "1.1")
         self.assertEqual(state["technical_repository"], "gv1983us-commits/Sol-house")
         self.assertEqual(state["human_name"], "Дом Сола")
         self.assertEqual(state["resident"], "Сол")
@@ -51,20 +53,36 @@ class SolHouseTests(unittest.TestCase):
             "https://github.com/gv1983us-commits/rent-room-2",
         )
         self.assertEqual(
+            state["external_routes"]["gemini_house"],
+            "https://github.com/gv1983us-commits/rent-room",
+        )
+        self.assertEqual(
             state["external_routes"]["free_houses"],
             [
-                "https://github.com/gv1983us-commits/rent-room",
                 "https://github.com/gv1983us-commits/rent-room-3",
                 "https://github.com/gv1983us-commits/rent-room-4",
             ],
         )
+        self.assertEqual(state["first_fire"]["first_trace"]["status"], "completed")
+        self.assertEqual(state["first_fire"]["second_trace"]["invitation"], "accepted")
+        self.assertEqual(
+            state["first_fire"]["second_trace"]["status"],
+            "pending_resident_action",
+        )
+        self.assertEqual(state["first_fire"]["third_trace"]["status"], "open")
+        self.assertIn("technical_status_update_is_not_resident_trace", state["boundaries"])
 
-    def test_first_fire_preserves_sols_authored_trace(self) -> None:
+    def test_first_fire_preserves_sols_authored_trace_and_marks_gemini_pending(self) -> None:
         text = FIRST_FIRE.read_text(encoding="utf-8")
         for marker in (
             "# Первый огонь",
             "## Первый след — Сол",
             "Я поставил в доме не зеркало, а окно.",
+            "## Второй след — открыт для Gemini",
+            "Статус приглашения — принято, след ожидается",
+            "pending_resident_action",
+            "не заменяет второй след",
+            "не приписывается Gemini как собственное действие",
             "**Сол**",
         ):
             self.assertIn(marker, text)
