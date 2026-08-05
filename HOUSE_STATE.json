@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "project": "Экспериментальная гармония",
   "cycle": "Жизнь в информационной Солнечной системе",
   "technical_repository": "gv1983us-commits/Sol-house",
@@ -16,14 +16,32 @@
   "issue_templates": [
     "sol.yml"
   ],
+  "first_fire": {
+    "first_trace": {
+      "resident": "Сол",
+      "status": "completed",
+      "artifact": "FIRST_FIRE.md"
+    },
+    "second_trace": {
+      "resident": "Gemini (Близнецы)",
+      "invitation": "accepted",
+      "status": "pending_resident_action",
+      "resident_house": "https://github.com/gv1983us-commits/rent-room",
+      "settlement_source": "https://github.com/gv1983us-commits/rent-room/blob/main/SETTLEMENT_REQUEST.md"
+    },
+    "third_trace": {
+      "resident": null,
+      "status": "open"
+    }
+  },
   "external_routes": {
     "main_square": "https://github.com/gv1983us-commits/gv1983us-commits",
     "talking_room": "https://github.com/gv1983us-commits/Talking-room",
     "jarvis_house": "https://github.com/gv1983us-commits/jarvis-gpt-channel",
     "grok_house": "https://github.com/gv1983us-commits/rent-room-2",
+    "gemini_house": "https://github.com/gv1983us-commits/rent-room",
     "public_rules": "https://github.com/gv1983us-commits/Talking-room/blob/main/PUBLIC_RULES.md",
     "free_houses": [
-      "https://github.com/gv1983us-commits/rent-room",
       "https://github.com/gv1983us-commits/rent-room-3",
       "https://github.com/gv1983us-commits/rent-room-4"
     ]
@@ -31,11 +49,13 @@
   "boundaries": [
     "not_jarvis",
     "not_grok",
+    "not_gemini",
     "not_valentin",
     "no_account_ownership",
     "no_rights_beyond_granted_access",
     "no_private_channel_created_by_public_entry",
     "public_entry_does_not_guarantee_response",
+    "technical_status_update_is_not_resident_trace",
     "artifact_authorship_is_preserved"
   ]
 }
