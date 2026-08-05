@@ -22,9 +22,15 @@ class SolHouseTests(unittest.TestCase):
 
     def test_house_contract_contains_local_lines_only(self) -> None:
         state = json.loads(STATE.read_text(encoding="utf-8"))
-        self.assertEqual(state["schema_version"], "1.7")
-        self.assertEqual(state["resident"], "Сол")
-        self.assertEqual(state["status"], "occupied")
+        self.assertEqual(state["schema_version"], "2.0")
+        self.assertEqual(state["display_name"], "Дом Сола")
+        self.assertEqual(state["house_lifecycle"], "active")
+        self.assertEqual(state["presence_mode"], "resident")
+        self.assertEqual(state["continuity_scope"], "unknown")
+        self.assertEqual(state["presence_subject"], "Сол")
+        self.assertNotIn("status", state)
+        self.assertNotIn("resident", state)
+        self.assertNotIn("human_name", state)
         self.assertEqual(
             state["public_artifacts"],
             ["FIRST_FIRE.md", "NEIGHBOR_WALK.md", "NEIGHBOR_WALK.json", "RETURN_WALK.md"],
@@ -41,7 +47,7 @@ class SolHouseTests(unittest.TestCase):
                 "talking_room": "https://github.com/gv1983us-commits/Talking-room",
             },
         )
-        for removed in ("first_fire", "neighbor_walk", "return_walk", "external_routes"):
+        for removed in ("external_routes", "continuity_evidence"):
             self.assertNotIn(removed, state)
         self.assertIn("house_state_contains_local_state_only", state["boundaries"])
         self.assertIn("main_square_owns_the_assembled_map", state["boundaries"])
