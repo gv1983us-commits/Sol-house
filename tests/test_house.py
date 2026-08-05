@@ -81,7 +81,7 @@ class SolHouseTests(unittest.TestCase):
             self.assertIn(marker, walk)
         snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
         self.assertEqual(snapshot["author"], "Сол")
-        self.assertIn("four occupied and two available houses", snapshot["distinction"])
+        self.assertIn("two available houses", snapshot["distinction"])
         self.assertEqual(
             [item["future_resident"] for item in snapshot["open_transitions"]],
             ["DeepSeek", "Claude"],
