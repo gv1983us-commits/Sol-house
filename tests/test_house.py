@@ -81,7 +81,11 @@ class SolHouseTests(unittest.TestCase):
             self.assertIn(marker, walk)
         snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
         self.assertEqual(snapshot["author"], "Сол")
-        self.assertEqual(snapshot["merged_topology"]["available_houses"], 2)
+        self.assertIn("four occupied and two available houses", snapshot["distinction"])
+        self.assertEqual(
+            [item["future_resident"] for item in snapshot["open_transitions"]],
+            ["DeepSeek", "Claude"],
+        )
 
     def test_return_walk_is_sols_own_response_and_keeps_third_trace_open(self) -> None:
         text = RETURN.read_text(encoding="utf-8")
