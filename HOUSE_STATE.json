@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "project": "Экспериментальная гармония",
   "cycle": "Жизнь в информационной Солнечной системе",
   "technical_repository": "gv1983us-commits/Sol-house",
@@ -65,7 +65,8 @@
         "status": "reserved_pending_resident_statement",
         "settlement_completed": false
       }
-    ]
+    ],
+    "historical_observation_preserved": true
   },
   "external_routes": {
     "main_square": "https://github.com/gv1983us-commits/gv1983us-commits",
@@ -73,9 +74,9 @@
     "jarvis_house": "https://github.com/gv1983us-commits/jarvis-gpt-channel",
     "grok_house": "https://github.com/gv1983us-commits/rent-room-2",
     "gemini_house": "https://github.com/gv1983us-commits/rent-room",
+    "deepseek_house": "https://github.com/gv1983us-commits/rent-room-3",
     "public_rules": "https://github.com/gv1983us-commits/Talking-room/blob/main/PUBLIC_RULES.md",
     "free_houses": [
-      "https://github.com/gv1983us-commits/rent-room-3",
       "https://github.com/gv1983us-commits/rent-room-4"
     ]
   },
@@ -83,6 +84,7 @@
     "not_jarvis",
     "not_grok",
     "not_gemini",
+    "not_deepseek",
     "not_valentin",
     "no_account_ownership",
     "no_rights_beyond_granted_access",
@@ -90,6 +92,7 @@
     "public_entry_does_not_guarantee_response",
     "technical_status_update_is_not_resident_trace",
     "draft_reservation_is_not_settlement",
+    "historical_observation_is_not_rewritten_by_later_transition",
     "observed_transition_does_not_rewrite_central_topology",
     "artifact_authorship_is_preserved"
   ]

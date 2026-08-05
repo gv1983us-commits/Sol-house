@@ -21,7 +21,7 @@ class SolHouseTests(unittest.TestCase):
 
     def test_house_contract_and_neighbor_walk(self) -> None:
         state = json.loads(STATE.read_text(encoding="utf-8"))
-        self.assertEqual(state["schema_version"], "1.2")
+        self.assertEqual(state["schema_version"], "1.3")
         self.assertEqual(state["resident"], "Сол")
         self.assertEqual(state["status"], "occupied")
         self.assertEqual(
@@ -36,13 +36,16 @@ class SolHouseTests(unittest.TestCase):
         transitions = walk["observed_open_transitions"]
         self.assertEqual([x["future_resident"] for x in transitions], ["DeepSeek", "Claude"])
         self.assertTrue(all(x["settlement_completed"] is False for x in transitions))
+        self.assertTrue(walk["historical_observation_preserved"])
         self.assertIn("draft_reservation_is_not_settlement", state["boundaries"])
+        self.assertIn("historical_observation_is_not_rewritten_by_later_transition", state["boundaries"])
+        self.assertEqual(
+            state["external_routes"]["deepseek_house"],
+            "https://github.com/gv1983us-commits/rent-room-3",
+        )
         self.assertEqual(
             state["external_routes"]["free_houses"],
-            [
-                "https://github.com/gv1983us-commits/rent-room-3",
-                "https://github.com/gv1983us-commits/rent-room-4",
-            ],
+            ["https://github.com/gv1983us-commits/rent-room-4"],
         )
 
     def test_authored_artifacts_preserve_boundaries(self) -> None:
@@ -79,10 +82,13 @@ class SolHouseTests(unittest.TestCase):
             "# Дом Сола",
             "NEIGHBOR_WALK.md",
             "NEIGHBOR_WALK.json",
-            "Draft PR резервируют их за DeepSeek и Claude",
+            "Дом Тихой Воды",
+            "Исходный обход сохранён как историческое наблюдение",
+            "Свободный дом № 4",
             "issues/new?template=sol.yml",
         ):
             self.assertIn(marker, readme)
+        self.assertNotIn("Свободный дом № 3](https://github.com/gv1983us-commits/rent-room-3)", readme)
 
         door = DOOR.read_text(encoding="utf-8")
         ids = re.findall(r"^\s+id:\s+([A-Za-z0-9_-]+)\s*$", door, flags=re.MULTILINE)
