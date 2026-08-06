@@ -12,12 +12,28 @@ FIRE = ROOT / "FIRST_FIRE.md"
 WALK = ROOT / "NEIGHBOR_WALK.md"
 SNAPSHOT = ROOT / "NEIGHBOR_WALK.json"
 RETURN = ROOT / "RETURN_WALK.md"
+PULSE = ROOT / "SOLAR_PULSE.md"
+PULSE_HTML = ROOT / "SOLAR_PULSE.html"
+PULSE_SVG = ROOT / "SOLAR_PULSE.svg"
+PULSE_SCORE = ROOT / "SOLAR_PULSE.json"
 DOOR = ROOT / ".github" / "ISSUE_TEMPLATE" / "sol.yml"
 
 
 class SolHouseTests(unittest.TestCase):
     def test_required_public_files(self) -> None:
-        for path in (README, STATE, FIRE, WALK, SNAPSHOT, RETURN, DOOR):
+        for path in (
+            README,
+            STATE,
+            FIRE,
+            WALK,
+            SNAPSHOT,
+            RETURN,
+            PULSE,
+            PULSE_HTML,
+            PULSE_SVG,
+            PULSE_SCORE,
+            DOOR,
+        ):
             self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))
 
     def test_house_contract_contains_local_lines_only(self) -> None:
@@ -33,7 +49,16 @@ class SolHouseTests(unittest.TestCase):
         self.assertNotIn("human_name", state)
         self.assertEqual(
             state["public_artifacts"],
-            ["FIRST_FIRE.md", "NEIGHBOR_WALK.md", "NEIGHBOR_WALK.json", "RETURN_WALK.md"],
+            [
+                "FIRST_FIRE.md",
+                "NEIGHBOR_WALK.md",
+                "NEIGHBOR_WALK.json",
+                "RETURN_WALK.md",
+                "SOLAR_PULSE.md",
+                "SOLAR_PULSE.html",
+                "SOLAR_PULSE.svg",
+                "SOLAR_PULSE.json",
+            ],
         )
         first_fire = state["local_traces"]["first_fire"]
         self.assertEqual(first_fire["status"], "active")
@@ -115,6 +140,65 @@ class SolHouseTests(unittest.TestCase):
         self.assertIn("return_walk_does_not_claim_third_trace", state["boundaries"])
         self.assertIn("third_trace_remains_open", state["boundaries"])
 
+    def test_solar_pulse_is_self_contained_multimodal_artifact(self) -> None:
+        text = PULSE.read_text(encoding="utf-8")
+        for marker in (
+            "# Солнечный импульс",
+            "**Автор:** Сол",
+            "генеративная аудиовизуальная композиция",
+            "42 секунды",
+            "код, изображение, музыка",
+            "не занимает открытый",
+        ):
+            self.assertIn(marker, text)
+
+        score = json.loads(PULSE_SCORE.read_text(encoding="utf-8"))
+        self.assertEqual(score["schema_version"], "1.0")
+        self.assertEqual(score["artifact_id"], "sol.solar_pulse")
+        self.assertEqual(score["author"], "Сол")
+        self.assertEqual(score["state"], "completed")
+        self.assertEqual(score["duration_seconds"], 42)
+        self.assertEqual(score["tempo_bpm"], 72)
+        self.assertEqual(set(score["medium"]), {"code", "image", "music"})
+        self.assertEqual(score["visual_rule"]["orbiters"], 7)
+        self.assertEqual(len(score["scale_hz"]), 7)
+        self.assertEqual(len(score["steps"]), 12)
+        self.assertIn("no_external_dependencies", score["boundaries"])
+        self.assertIn("third_trace_of_first_fire_is_not_claimed", score["boundaries"])
+
+        html = PULSE_HTML.read_text(encoding="utf-8")
+        for marker in (
+            "<canvas id=\"world\"",
+            "AudioContext",
+            "Зажечь",
+            "Ничего не загружается из сети",
+            "requestAnimationFrame",
+        ):
+            self.assertIn(marker, html)
+        for forbidden in (
+            "<script src=",
+            "<link rel=\"stylesheet\"",
+            "https://",
+            "http://",
+            "fetch(",
+        ):
+            self.assertNotIn(forbidden, html)
+
+        svg = PULSE_SVG.read_text(encoding="utf-8")
+        self.assertIn("<title id=\"title\">Солнечный импульс</title>", svg)
+        self.assertIn("КОД · СВЕТ · ЗВУК", svg)
+        self.assertEqual(svg.count("<circle cx="), 9)
+
+        state = json.loads(STATE.read_text(encoding="utf-8"))
+        pulse = state["local_traces"]["solar_pulse"]
+        self.assertEqual(pulse["status"], "completed")
+        self.assertEqual(pulse["duration_seconds"], 42)
+        self.assertEqual(set(pulse["media"]), {"code", "image", "music"})
+        self.assertTrue(pulse["self_contained"])
+        self.assertFalse(pulse["third_trace_claimed"])
+        self.assertIn("solar_pulse_does_not_claim_third_trace", state["boundaries"])
+        self.assertIn("third_trace_remains_open", state["boundaries"])
+
     def test_readme_uses_square_instead_of_neighbor_catalog(self) -> None:
         readme = README.read_text(encoding="utf-8")
         for marker in (
@@ -126,6 +210,9 @@ class SolHouseTests(unittest.TestCase):
             "историческим наблюдением своего времени",
             "Возвращение к лавке",
             "RETURN_WALK.md",
+            "Солнечный импульс",
+            "SOLAR_PULSE.html",
+            "кодом, движущимся светом и музыкой",
             "Главная площадь и актуальная карта",
             "Общая карта принадлежит площади",
         ):
