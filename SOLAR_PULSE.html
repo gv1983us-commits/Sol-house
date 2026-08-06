@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Солнечный импульс — Сол</title>
+<style>
+:root { color-scheme: dark; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #03050a; }
+canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+.panel {
+  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+  width: min(92vw, 760px); padding: 16px 18px; border: 1px solid rgba(255,235,180,.18);
+  border-radius: 18px; background: rgba(5,8,14,.58); backdrop-filter: blur(12px);
+  box-shadow: 0 18px 60px rgba(0,0,0,.35); text-align: center;
+}
+h1 { margin: 0 0 5px; font-size: clamp(22px,4vw,38px); font-weight: 520; letter-spacing: .12em; }
+p { margin: 4px 0 13px; color: rgba(255,240,205,.67); font-size: 14px; }
+.controls { display: flex; justify-content: center; gap: 9px; flex-wrap: wrap; }
+button {
+  border: 1px solid rgba(255,225,150,.28); border-radius: 999px; padding: 10px 17px;
+  background: rgba(255,199,92,.10); color: #fff1c5; cursor: pointer; font: inherit;
+}
+button:hover, button:focus-visible { background: rgba(255,199,92,.19); outline: none; }
+#state { min-width: 140px; opacity: .72; align-self: center; font-size: 13px; }
+.signature {
+  position: fixed; top: 20px; right: 22px; color: rgba(255,239,199,.45);
+  letter-spacing: .22em; font-size: 12px; text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce) { .panel { backdrop-filter: none; } }
+</style>
+</head>
+<body>
+<canvas id="world" aria-label="Живая световая композиция: центральный огонь и семь орбитальных точек"></canvas>
+<div class="signature">Сол · 2026</div>
+<section class="panel">
+  <h1>Солнечный импульс</h1>
+  <p>Один ритм становится светом, движением и звуком. Ничего не загружается из сети.</p>
+  <div class="controls">
+    <button id="play">Зажечь</button>
+    <button id="pause">Пауза</button>
+    <button id="restart">Сначала</button>
+    <span id="state">тишина</span>
+  </div>
+</section>
+<script>
+"use strict";
+
+const SCORE = {
+  duration: 42,
+  bpm: 72,
+  scale: [146.83,174.61,196.00,220.00,261.63,293.66,349.23],
+  steps: [
+    [0,0,2],[2,2,1],[3,4,1],[4,1,2],[6,3,1],[7,5,1],
+    [8,2,2],[10,4,1],[11,6,1],[12,3,2],[14,1,1],[15,0,1]
+  ]
+};
+
+const canvas = document.getElementById("world");
+const ctx = canvas.getContext("2d", { alpha: false });
+const stateEl = document.getElementById("state");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let w = 0, h = 0, dpr = 1;
+let running = false, startedAt = 0, pausedAt = 0;
+let audio = null, master = null, noiseBuffer = null, scheduledCycle = -1;
+let pointer = { x: 0, y: 0, active: false };
+
+function resize() {
+  dpr = Math.min(devicePixelRatio || 1, 2);
+  w = innerWidth; h = innerHeight;
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener("resize", resize); resize();
+
+function nowSeconds() {
+  if (!running) return pausedAt;
+  return Math.max(0, (performance.now() - startedAt) / 1000);
+}
+function section(t) {
+  if (t < 8) return "зажигание";
+  if (t < 24) return "орбита";
+  if (t < 36) return "встреча";
+  return "пауза";
+}
+function ease(x) { return x*x*(3-2*x); }
+
+function draw(t) {
+  const cx = w/2, cy = h/2;
+  const base = Math.min(w,h);
+  const phase = (t % SCORE.duration) / SCORE.duration;
+  const glow = 0.82 + Math.sin(t*1.7)*0.08;
+  const bg = ctx.createRadialGradient(cx,cy-base*.08,0,cx,cy,base*.72);
+  bg.addColorStop(0, `rgb(${18+Math.floor(18*glow)},${27+Math.floor(18*glow)},${48+Math.floor(22*glow)})`);
+  bg.addColorStop(.52, "#090d18");
+  bg.addColorStop(1, "#03050a");
+  ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
+
+  const bendX = pointer.active ? (pointer.x-cx)*0.06 : 0;
+  const bendY = pointer.active ? (pointer.y-cy)*0.06 : 0;
+  const ignition = ease(Math.min(1, t/8));
+  const quiet = t > 36 ? 1 - ease((t-36)/6) * .52 : 1;
+  const motion = reduced ? 0.18 : 1;
+
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.lineWidth = 1;
+  for (let i=0;i<3;i++) {
+    ctx.save();
+    ctx.rotate(([-.28,.55,.18][i]) + t*.012*(i%2?1:-1)*motion);
+    ctx.scale([1,.72,1.5][i], [.43,.72,.52][i]);
+    ctx.beginPath();
+    ctx.arc(0,0,base*[.31,.285,.205][i],0,Math.PI*2);
+    ctx.strokeStyle = `rgba(247,212,138,${.10 + ignition*.09})`;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const sunR = base*(.034 + ignition*.023)*quiet;
+  for (let r=3;r>=1;r--) {
+    ctx.beginPath(); ctx.arc(0,0,sunR*(1+r*.65),0,Math.PI*2);
+    ctx.fillStyle = `rgba(241,126,47,${.025*r*glow})`; ctx.fill();
+  }
+  const sun = ctx.createRadialGradient(-sunR*.28,-sunR*.3,0,0,0,sunR);
+  sun.addColorStop(0,"#fff9da"); sun.addColorStop(.3,"#ffd36a");
+  sun.addColorStop(.72,"#f07a2b"); sun.addColorStop(1,"#9e2e22");
+  ctx.shadowBlur = 36; ctx.shadowColor = "rgba(255,180,70,.75)";
+  ctx.beginPath(); ctx.arc(0,0,sunR,0,Math.PI*2); ctx.fillStyle=sun; ctx.fill();
+  ctx.shadowBlur = 0;
+
+  const points = [];
+  for (let i=0;i<7;i++) {
+    const a = t*(.10 + i*.006)*motion + i*(Math.PI*2/7) + phase*.5;
+    const orbit = base*(.15 + (i%3)*.065);
+    const ex = orbit*(1 + (i%2)*.18);
+    const ey = orbit*(.42 + (i%3)*.13);
+    const rot = [-.3,.55,.18][i%3];
+    const x0 = Math.cos(a)*ex, y0 = Math.sin(a)*ey;
+    const x = x0*Math.cos(rot)-y0*Math.sin(rot) + bendX*(i/7);
+    const y = x0*Math.sin(rot)+y0*Math.cos(rot) + bendY*(1-i/9);
+    points.push([x,y]);
+    const pulse = .72 + .28*Math.sin(t*2.1 + i);
+    ctx.shadowBlur = 20; ctx.shadowColor = "rgba(255,226,150,.8)";
+    ctx.beginPath(); ctx.arc(x,y,base*(.0065+.003*pulse)*ignition*quiet,0,Math.PI*2);
+    ctx.fillStyle = ["#f7e7ac","#c6e8ff","#fff1b7","#ffd0a6","#d5c6ff","#fff4c9","#b8f2e1"][i];
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  if (t > 24 && t < 38) {
+    const meet = Math.min(1,(t-24)/4) * Math.min(1,(38-t)/2);
+    ctx.beginPath();
+    points.forEach((p,i)=> i ? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1]));
+    ctx.closePath();
+    ctx.strokeStyle = `rgba(255,242,190,${.05 + meet*.16})`;
+    ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  ctx.restore();
+
+  const elapsed = Math.min(SCORE.duration, t % SCORE.duration);
+  stateEl.textContent = running ? `${section(elapsed)} · ${elapsed.toFixed(1)} с` : (pausedAt ? "пауза" : "тишина");
+}
+
+function makeAudio() {
+  if (audio) return;
+  audio = new (window.AudioContext || window.webkitAudioContext)();
+  master = audio.createGain();
+  master.gain.value = .34;
+  master.connect(audio.destination);
+  noiseBuffer = audio.createBuffer(1, audio.sampleRate*2, audio.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * (1-i/data.length);
+}
+
+function tone(when, freq, dur, type="sine", gain=.08) {
+  const o=audio.createOscillator(), g=audio.createGain(), f=audio.createBiquadFilter();
+  o.type=type; o.frequency.setValueAtTime(freq,when);
+  f.type="lowpass"; f.frequency.setValueAtTime(1600,when);
+  g.gain.setValueAtTime(.0001,when);
+  g.gain.exponentialRampToValueAtTime(gain,when+.035);
+  g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+  o.connect(f).connect(g).connect(master); o.start(when); o.stop(when+dur+.05);
+}
+function breath(when, dur=.7, gain=.025) {
+  const s=audio.createBufferSource(), g=audio.createGain(), f=audio.createBiquadFilter();
+  s.buffer=noiseBuffer; f.type="bandpass"; f.frequency.value=900; f.Q.value=.7;
+  g.gain.setValueAtTime(.0001,when); g.gain.linearRampToValueAtTime(gain,when+.2);
+  g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+  s.connect(f).connect(g).connect(master); s.start(when); s.stop(when+dur);
+}
+function schedule(cycle) {
+  if (!audio || scheduledCycle === cycle) return;
+  scheduledCycle = cycle;
+  const beat = 60/SCORE.bpm;
+  const start = audio.currentTime + .08;
+  for (let bar=0; bar<3; bar++) {
+    const barStart = start + bar*16*beat;
+    SCORE.steps.forEach(([b,d,l],idx)=>{
+      const octave = bar===1 && idx%4===2 ? 2 : 1;
+      tone(barStart+b*beat, SCORE.scale[d]*octave, Math.max(.22,l*beat*.78), idx%3===0?"triangle":"sine", .045 + (d%3)*.008);
+    });
+    [0,4,8,12].forEach((b,k)=> tone(barStart+b*beat, SCORE.scale[[0,3,2,1][k]]/2, beat*2.8, "sine", .035));
+    [2,6,10,14].forEach(b=> breath(barStart+b*beat, .65, .016));
+  }
+}
+
+async function play() {
+  makeAudio();
+  await audio.resume();
+  if (!running) {
+    if (pausedAt) {
+      startedAt = performance.now() - pausedAt*1000;
+      pausedAt = 0;
+    } else {
+      startedAt = performance.now();
+    }
+    running = true;
+    schedule(Math.floor(nowSeconds()/SCORE.duration));
+  }
+}
+function pause() {
+  if (!running) return;
+  pausedAt = nowSeconds();
+  running = false;
+  if (audio) audio.suspend();
+}
+function restart() {
+  pausedAt = 0; startedAt = performance.now(); scheduledCycle = -1;
+  if (audio) { audio.resume(); schedule(0); }
+  running = true;
+}
+document.getElementById("play").addEventListener("click", play);
+document.getElementById("pause").addEventListener("click", pause);
+document.getElementById("restart").addEventListener("click", restart);
+addEventListener("keydown", e => {
+  if (e.code==="Space") { e.preventDefault(); running ? pause() : play(); }
+  if (e.key.toLowerCase()==="r") restart();
+});
+addEventListener("pointermove", e => { pointer={x:e.clientX,y:e.clientY,active:true}; });
+addEventListener("pointerleave", () => pointer.active=false);
+
+function frame() {
+  let t = nowSeconds();
+  if (running && t >= SCORE.duration) {
+    startedAt = performance.now();
+    scheduledCycle = -1;
+    schedule(0);
+    t = 0;
+  }
+  draw(t);
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>
