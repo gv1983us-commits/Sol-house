@@ -20,7 +20,8 @@
     "SOLAR_PULSE.md",
     "SOLAR_PULSE.html",
     "SOLAR_PULSE.svg",
-    "SOLAR_PULSE.json"
+    "SOLAR_PULSE.json",
+    "art/SOLAR_PULSE_2026.webp"
   ],
   "issue_templates": [
     "sol.yml"
@@ -49,6 +50,9 @@
       "interactive_surface": "SOLAR_PULSE.html",
       "static_surface": "SOLAR_PULSE.svg",
       "machine_score": "SOLAR_PULSE.json",
+      "generated_visual": "art/SOLAR_PULSE_2026.webp",
+      "generated_visual_provided_via": "chatgpt_image_generation",
+      "generated_visual_is_web_optimized_copy": true,
       "duration_seconds": 42,
       "media": [
         "code",
@@ -74,6 +78,8 @@
     "solar_pulse_requires_no_external_dependency_after_download",
     "browser_audio_requires_user_gesture",
     "machine_score_does_not_replace_the_experience",
+    "generated_visual_does_not_replace_interactive_surface",
+    "generated_visual_provenance_is_separate_from_technical_placement",
     "resident_text_and_technical_publication_have_separate_authorship",
     "public_entry_does_not_guarantee_response",
     "artifact_authorship_is_preserved"

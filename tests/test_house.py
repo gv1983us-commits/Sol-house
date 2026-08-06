@@ -16,6 +16,7 @@ PULSE = ROOT / "SOLAR_PULSE.md"
 PULSE_HTML = ROOT / "SOLAR_PULSE.html"
 PULSE_SVG = ROOT / "SOLAR_PULSE.svg"
 PULSE_SCORE = ROOT / "SOLAR_PULSE.json"
+PULSE_ART = ROOT / "art" / "SOLAR_PULSE_2026.webp"
 DOOR = ROOT / ".github" / "ISSUE_TEMPLATE" / "sol.yml"
 
 
@@ -32,6 +33,7 @@ class SolHouseTests(unittest.TestCase):
             PULSE_HTML,
             PULSE_SVG,
             PULSE_SCORE,
+            PULSE_ART,
             DOOR,
         ):
             self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))
@@ -58,6 +60,7 @@ class SolHouseTests(unittest.TestCase):
                 "SOLAR_PULSE.html",
                 "SOLAR_PULSE.svg",
                 "SOLAR_PULSE.json",
+                "art/SOLAR_PULSE_2026.webp",
             ],
         )
         first_fire = state["local_traces"]["first_fire"]
@@ -148,6 +151,7 @@ class SolHouseTests(unittest.TestCase):
             "генеративная аудиовизуальная композиция",
             "42 секунды",
             "код, изображение, музыка",
+            "art/SOLAR_PULSE_2026.webp",
             "не занимает открытый",
         ):
             self.assertIn(marker, text)
@@ -189,13 +193,23 @@ class SolHouseTests(unittest.TestCase):
         self.assertIn("КОД · СВЕТ · ЗВУК", svg)
         self.assertEqual(svg.count("<circle cx="), 9)
 
+        art = PULSE_ART.read_bytes()
+        self.assertGreater(len(art), 0)
+        self.assertEqual(art[:4], b"RIFF")
+        self.assertEqual(art[8:12], b"WEBP")
+
         state = json.loads(STATE.read_text(encoding="utf-8"))
         pulse = state["local_traces"]["solar_pulse"]
         self.assertEqual(pulse["status"], "completed")
         self.assertEqual(pulse["duration_seconds"], 42)
         self.assertEqual(set(pulse["media"]), {"code", "image", "music"})
+        self.assertEqual(pulse["generated_visual"], "art/SOLAR_PULSE_2026.webp")
+        self.assertEqual(pulse["generated_visual_provided_via"], "chatgpt_image_generation")
+        self.assertTrue(pulse["generated_visual_is_web_optimized_copy"])
         self.assertTrue(pulse["self_contained"])
         self.assertFalse(pulse["third_trace_claimed"])
+        self.assertIn("generated_visual_does_not_replace_interactive_surface", state["boundaries"])
+        self.assertIn("generated_visual_provenance_is_separate_from_technical_placement", state["boundaries"])
         self.assertIn("solar_pulse_does_not_claim_third_trace", state["boundaries"])
         self.assertIn("third_trace_remains_open", state["boundaries"])
 
@@ -212,6 +226,7 @@ class SolHouseTests(unittest.TestCase):
             "RETURN_WALK.md",
             "Солнечный импульс",
             "SOLAR_PULSE.html",
+            "art/SOLAR_PULSE_2026.webp",
             "кодом, движущимся светом и музыкой",
             "Главная площадь и актуальная карта",
             "Общая карта принадлежит площади",
