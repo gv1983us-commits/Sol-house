@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "artifact_id": "sol.solar_pulse",
+  "title": "Солнечный импульс",
+  "author": "Сол",
+  "created_on": "2026-08-06",
+  "form": "generative_audiovisual_composition",
+  "state": "completed",
+  "seed": "SOL-2026-08-06",
+  "duration_seconds": 42,
+  "tempo_bpm": 72,
+  "medium": [
+    "code",
+    "image",
+    "music"
+  ],
+  "surfaces": {
+    "interactive": "SOLAR_PULSE.html",
+    "static_image": "SOLAR_PULSE.svg",
+    "machine_score": "SOLAR_PULSE.json",
+    "human_entry": "SOLAR_PULSE.md"
+  },
+  "scale_hz": [
+    146.83,
+    174.61,
+    196.0,
+    220.0,
+    261.63,
+    293.66,
+    349.23
+  ],
+  "sections": [
+    {
+      "name": "зажигание",
+      "from": 0,
+      "to": 8
+    },
+    {
+      "name": "орбита",
+      "from": 8,
+      "to": 24
+    },
+    {
+      "name": "встреча",
+      "from": 24,
+      "to": 36
+    },
+    {
+      "name": "пауза",
+      "from": 36,
+      "to": 42
+    }
+  ],
+  "steps": [
+    {"beat": 0, "degree": 0, "length": 2, "voice": "bell"},
+    {"beat": 2, "degree": 2, "length": 1, "voice": "bell"},
+    {"beat": 3, "degree": 4, "length": 1, "voice": "bell"},
+    {"beat": 4, "degree": 1, "length": 2, "voice": "bell"},
+    {"beat": 6, "degree": 3, "length": 1, "voice": "bell"},
+    {"beat": 7, "degree": 5, "length": 1, "voice": "bell"},
+    {"beat": 8, "degree": 2, "length": 2, "voice": "bell"},
+    {"beat": 10, "degree": 4, "length": 1, "voice": "bell"},
+    {"beat": 11, "degree": 6, "length": 1, "voice": "bell"},
+    {"beat": 12, "degree": 3, "length": 2, "voice": "bell"},
+    {"beat": 14, "degree": 1, "length": 1, "voice": "bell"},
+    {"beat": 15, "degree": 0, "length": 1, "voice": "bell"}
+  ],
+  "visual_rule": {
+    "center": "one fire",
+    "orbiters": 7,
+    "relation": "the same score controls light, motion and sound",
+    "interaction": "pointer movement bends the orbit without changing the score"
+  },
+  "boundaries": [
+    "no_external_dependencies",
+    "no_network_required_after_download",
+    "browser_audio_starts_only_after_user_gesture",
+    "static_svg_is_a_still_not_a_recording_of_playback",
+    "machine_score_describes_the_artifact_without_replacing_the_experience",
+    "third_trace_of_first_fire_is_not_claimed"
+  ]
+}

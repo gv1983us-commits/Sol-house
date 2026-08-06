@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc">
+<title id="title">Солнечный импульс</title>
+<desc id="desc">Один центральный огонь и семь световых точек на пересекающихся орбитах.</desc>
+<defs>
+  <radialGradient id="bg" cx="50%" cy="45%" r="75%">
+    <stop offset="0" stop-color="#19243c"/>
+    <stop offset="0.55" stop-color="#090d18"/>
+    <stop offset="1" stop-color="#03050a"/>
+  </radialGradient>
+  <radialGradient id="sun" cx="42%" cy="38%" r="65%">
+    <stop offset="0" stop-color="#fff8cf"/>
+    <stop offset="0.28" stop-color="#ffd36a"/>
+    <stop offset="0.7" stop-color="#f07a2b"/>
+    <stop offset="1" stop-color="#9e2e22"/>
+  </radialGradient>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="18" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="7"/>
+  </filter>
+</defs>
+<rect width="1200" height="1200" fill="url(#bg)"/>
+<g fill="none" stroke="#f7d48a" stroke-opacity=".18">
+  <ellipse cx="600" cy="600" rx="380" ry="150" transform="rotate(-18 600 600)"/>
+  <ellipse cx="600" cy="600" rx="330" ry="235" transform="rotate(34 600 600)"/>
+  <ellipse cx="600" cy="600" rx="235" ry="390" transform="rotate(12 600 600)"/>
+</g>
+<g stroke="#ffd477" stroke-linecap="round" opacity=".45">
+  <path d="M600 250v-70"/>
+  <path d="M600 950v70"/>
+  <path d="M250 600h-70"/>
+  <path d="M950 600h70"/>
+  <path d="M352 352l-50-50"/>
+  <path d="M848 848l50 50"/>
+  <path d="M848 352l50-50"/>
+  <path d="M352 848l-50 50"/>
+</g>
+<circle cx="600" cy="600" r="122" fill="#f09a3d" opacity=".18" filter="url(#soft)"/>
+<circle cx="600" cy="600" r="78" fill="url(#sun)" filter="url(#glow)"/>
+<g filter="url(#glow)">
+  <circle cx="897" cy="477" r="14" fill="#f7e7ac"/>
+  <circle cx="803" cy="746" r="13" fill="#c6e8ff"/>
+  <circle cx="532" cy="838" r="12" fill="#fff1b7"/>
+  <circle cx="312" cy="690" r="13" fill="#ffd0a6"/>
+  <circle cx="365" cy="428" r="12" fill="#d5c6ff"/>
+  <circle cx="640" cy="312" r="13" fill="#fff4c9"/>
+  <circle cx="720" cy="566" r="11" fill="#b8f2e1"/>
+</g>
+<path d="M365 428 C510 360, 710 360, 897 477 C810 625, 670 770, 532 838 C430 790, 340 750, 312 690 C340 560, 450 470, 600 600 C675 545, 700 530, 720 566"
+      fill="none" stroke="#fff1bb" stroke-opacity=".22" stroke-width="3"/>
+<text x="600" y="1090" text-anchor="middle" fill="#f5e4b6" font-family="system-ui, sans-serif" font-size="38" letter-spacing="8">СОЛНЕЧНЫЙ ИМПУЛЬС</text>
+<text x="600" y="1138" text-anchor="middle" fill="#f5e4b6" fill-opacity=".55" font-family="system-ui, sans-serif" font-size="19" letter-spacing="3">КОД · СВЕТ · ЗВУК</text>
+</svg>
