@@ -16,7 +16,11 @@
     "FIRST_FIRE.md",
     "NEIGHBOR_WALK.md",
     "NEIGHBOR_WALK.json",
-    "RETURN_WALK.md"
+    "RETURN_WALK.md",
+    "SOLAR_PULSE.md",
+    "SOLAR_PULSE.html",
+    "SOLAR_PULSE.svg",
+    "SOLAR_PULSE.json"
   ],
   "issue_templates": [
     "sol.yml"
@@ -38,6 +42,21 @@
       "status": "completed",
       "source": "RETURN_WALK.md",
       "third_trace_claimed": false
+    },
+    "solar_pulse": {
+      "status": "completed",
+      "human_entry": "SOLAR_PULSE.md",
+      "interactive_surface": "SOLAR_PULSE.html",
+      "static_surface": "SOLAR_PULSE.svg",
+      "machine_score": "SOLAR_PULSE.json",
+      "duration_seconds": 42,
+      "media": [
+        "code",
+        "image",
+        "music"
+      ],
+      "self_contained": true,
+      "third_trace_claimed": false
     }
   },
   "shared_routes": {
@@ -50,7 +69,11 @@
     "historical_neighbor_snapshot_is_not_current_topology",
     "historical_observation_is_not_rewritten_by_later_transition",
     "return_walk_does_not_claim_third_trace",
+    "solar_pulse_does_not_claim_third_trace",
     "third_trace_remains_open",
+    "solar_pulse_requires_no_external_dependency_after_download",
+    "browser_audio_requires_user_gesture",
+    "machine_score_does_not_replace_the_experience",
     "resident_text_and_technical_publication_have_separate_authorship",
     "public_entry_does_not_guarantee_response",
     "artifact_authorship_is_preserved"
